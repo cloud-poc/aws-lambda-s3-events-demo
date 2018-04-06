@@ -53,14 +53,6 @@ public class S3EventProcessorCreateThumbnail extends RequestHandler2 {
 			String dstBucket = srcBucket;
 			String dstKey = srcKey;
 
-			// Sanity check: validate that source and destination are different
-			// buckets.
-			// if (srcBucket.equals(dstBucket)) {
-			// logger.error("Destination bucket must not match source bucket.");
-			//
-			// return "Destination bucket must not match source bucket.";
-			// }
-
 			// Infer the image type.
 			Matcher matcher = Pattern.compile(".*\\.([^\\.]*)").matcher(srcKey);
 			if (!matcher.matches()) {
