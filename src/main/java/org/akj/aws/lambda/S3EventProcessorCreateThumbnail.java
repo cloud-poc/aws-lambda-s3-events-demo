@@ -6,6 +6,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
@@ -13,6 +14,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.handlers.RequestHandler2;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -25,45 +29,49 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 
 public class S3EventProcessorCreateThumbnail extends RequestHandler2 {
-	private static final float MAX_WIDTH = 100;
-	private static final float MAX_HEIGHT = 100;
+	private static final float MAX_WIDTH = 200;
+	private static final float MAX_HEIGHT = 200;
 	private final String JPG_TYPE = (String) "jpg";
 	private final String JPG_MIME = (String) "image/jpeg";
 	private final String PNG_TYPE = (String) "png";
 	private final String PNG_MIME = (String) "image/png";
-	private final String dstBucket = "tech-s3-demo";
-	
+	// private final String dstBucket = "tech-s3-demo";
+
+	private static Logger logger = LoggerFactory.getLogger(S3EventProcessorCreateThumbnail.class);
+
 	public String handleRequest(S3Event s3event, Context context) {
 		try {
-			
+
 			S3EventNotificationRecord record = s3event.getRecords().get(0);
 
 			String srcBucket = record.getS3().getBucket().getName();
-			
+
 			// Object key may have spaces or unicode non-ASCII characters.
 			String srcKey = record.getS3().getObject().getKey().replace('+', ' ');
 			srcKey = URLDecoder.decode(srcKey, "UTF-8");
 
-			//String dstBucket = srcBucket + "resized";
-			String dstKey = srcKey + "-small";
+			String dstBucket = srcBucket;
+			String dstKey = srcKey;
 
 			// Sanity check: validate that source and destination are different
 			// buckets.
-			if (srcBucket.equals(dstBucket)) {
-				System.out.println("Destination bucket must not match source bucket.");
-				return "";
-			}
+			// if (srcBucket.equals(dstBucket)) {
+			// logger.error("Destination bucket must not match source bucket.");
+			//
+			// return "Destination bucket must not match source bucket.";
+			// }
 
 			// Infer the image type.
 			Matcher matcher = Pattern.compile(".*\\.([^\\.]*)").matcher(srcKey);
 			if (!matcher.matches()) {
-				System.out.println("Unable to infer image type for key " + srcKey);
-				return "";
+				logger.error("Unable to infer image type for key " + srcKey);
+				return "Unable to infer image type for key " + srcKey;
 			}
+
 			String imageType = matcher.group(1);
 			if (!(JPG_TYPE.equals(imageType)) && !(PNG_TYPE.equals(imageType))) {
-				System.out.println("Skipping non-image " + srcKey);
-				return "";
+				logger.error("Skipping non-image " + srcKey);
+				return "Skipping non-image " + srcKey;
 			}
 
 			// Download the image from S3 into a stream
@@ -108,13 +116,25 @@ public class S3EventProcessorCreateThumbnail extends RequestHandler2 {
 			}
 
 			// Uploading to S3 destination bucket
-			System.out.println("Writing to: " + dstBucket + "/" + dstKey);
+			dstKey = composeDstKey(srcKey);
+			logger.info("Writing to: " + dstBucket + "/" + dstKey);
 			s3Client.putObject(dstBucket, dstKey, is, meta);
-			System.out.println("Successfully resized " + srcBucket + "/" + srcKey + " and uploaded to " + dstBucket
-					+ "/" + dstKey);
-			return "Ok";
+			logger.info("Successfully resized " + srcBucket + "/" + srcKey + " and uploaded to " + dstBucket + "/"
+					+ dstKey);
+			return "success";
 		} catch (IOException e) {
+			logger.error(e.getMessage());
 			throw new RuntimeException(e);
 		}
+	}
+
+	public String composeDstKey(String srcKey) {
+		StringBuilder sbuilder = new StringBuilder();
+		sbuilder.append(srcKey.substring(0, srcKey.lastIndexOf(File.separatorChar)) + "-resized" + File.separatorChar)
+				.append(srcKey.substring(srcKey.lastIndexOf(File.separatorChar) + 1, srcKey.lastIndexOf(".")))
+				.append("-" + (int) MAX_WIDTH + "@" + (int) MAX_HEIGHT)
+				.append(srcKey.substring(srcKey.lastIndexOf('.')));
+
+		return sbuilder.toString();
 	}
 }
