@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/' >
+
+    <appender name="lambdaAppender" class="com.amazonaws.services.lambda.runtime.log4j.LambdaAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} [%X{AWSRequestId}] %-5p %c:%L - %m%n" />
+        </layout>
+    </appender>
+
+    <!-- 根logger的设置-->
+    <root>
+        <priority value ="${loglevel}"/>
+        <appender-ref ref="lambdaAppender"/>
+    </root>
+
+</log4j:configuration>

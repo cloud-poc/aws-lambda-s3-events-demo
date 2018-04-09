@@ -11,6 +11,7 @@
 		<aws.lambda.core.version>1.2.0</aws.lambda.core.version>
 		<logback.version>1.2.3</logback.version>
 		<slf4j.version>1.7.25</slf4j.version>
+		<aws.lambda.java.log4j.version>1.0.0</aws.lambda.java.log4j.version>
 	</properties>
 
 	<dependencies>
@@ -33,8 +34,14 @@
 			<version>${aws.lambda.core.version}</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
 		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-lambda-java-log4j</artifactId>
+			<version>${aws.lambda.java.log4j.version}</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
+		<!-- <dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>${logback.version}</version>
@@ -56,7 +63,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
 			<version>${slf4j.version}</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
 		<dependency>
@@ -65,7 +72,6 @@
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>

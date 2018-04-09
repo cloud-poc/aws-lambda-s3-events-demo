@@ -2,7 +2,7 @@
 <configuration>
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d %p (%file:%line\)- %m%n</pattern>
+			<pattern>%d %p  [%X{AWSRequestId}] - %m%n</pattern>
 			<charset>UTF-8</charset>
 		</encoder>
 	</appender>

@@ -15,8 +15,7 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import com.amazonaws.handlers.RequestHandler2;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -37,11 +36,12 @@ public class S3EventProcessorCreateThumbnail extends RequestHandler2 {
 	private final String PNG_MIME = (String) "image/png";
 	// private final String dstBucket = "tech-s3-demo";
 
-	private static Logger logger = LoggerFactory.getLogger(S3EventProcessorCreateThumbnail.class);
+	// private static Logger logger =
+	// LoggerFactory.getLogger(S3EventProcessorCreateThumbnail.class);
+	private static Logger logger = Logger.getLogger(S3EventProcessorCreateThumbnail.class);
 
 	public String handleRequest(S3Event s3event, Context context) {
 		try {
-
 			S3EventNotificationRecord record = s3event.getRecords().get(0);
 
 			String srcBucket = record.getS3().getBucket().getName();
